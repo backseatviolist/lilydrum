@@ -1,3 +1,4 @@
+var notesFile, outFile;
 var score, sd, tempo;
 var samples, samplesDir, noteData;
 
@@ -11,7 +12,7 @@ sd = CtkSynthDef(\note, {
 	Out.ar(out, Pan2.ar(snd, 0.0, amp));
 });
 
-samplesDir = "xxx/tr505/";
+samplesDir = "/home/nathan/music/digital/samples/instruments/tr505/";
 
 samples = (
 	bassdrum: "bass drum 505.wav",
@@ -29,7 +30,12 @@ samples.keys.do { |name|
 
 tempo = 60 / 120;
 
-noteData = TabFileReader("xxxxx.notes");
+File.use(Platform.userHomeDir +/+ ".lilydrum-cache", "r", { |f|
+	var str = f.readAllString;
+	# notesFile, outFile = str.split($\n);
+});
+
+noteData = TabFileReader(notesFile);
 noteData.do { |line|
 	if (line[1] == "note") {
 		var time = line[0].asFloat;
@@ -39,7 +45,7 @@ noteData.do { |line|
 	};
 };
 
-score.write("xxxxx.wav",
+score.write(outFile,
 	sampleRate: 44100,
 	headerFormat: "WAVE",
 	sampleFormat: "float",

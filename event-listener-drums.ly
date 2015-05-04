@@ -36,22 +36,15 @@
 
 %%%% Helper functions
 
-#(define (filename-from-staffname context)
-   "Constructs a filename in the form
-@file{@var{original_filename}-@var{staff_instrument_name}.notes} if the
-staff has an instrument name.  If the staff has no instrument
-name, it uses "unnamed-staff" for that part of the filename."
-    (let* ((inst-name (ly:context-id context)))
-     (string-concatenate (list
-                          (substring (object->string (command-line))
-                           ;; filename without .ly part
-                           (+ (string-rindex (object->string (command-line)) #\sp) 2)
-                           (- (string-length (object->string (command-line))) 5))
-                          "-"
-                          (if (string? inst-name)
-                              inst-name
-                            "unnamed")
-                          ".lilydrum-notes"))))
+#(define lilydrum-notes-file
+   (string-concatenate (list
+                        (substring (object->string (command-line))
+                         ;; filename without .ly part
+                         (+ (string-rindex (object->string (command-line)) #\sp) 2)
+                         (- (string-length (object->string (command-line))) 5))
+                         ".lilydrum-notes")))
+
+#(close (open-file lilydrum-notes-file "w"))
 
 #(define (format-moment moment)
    (exact->inexact
@@ -99,7 +92,7 @@ optionally outputs to the console as well.  context may be specified
 as an engraver for convenience."
    (if (ly:translator? context)
        (set! context (ly:translator-context context)))
-   (let* ((p (open-file (filename-from-staffname context) "a")))
+   (let* ((p (open-file lilydrum-notes-file "a")))
      ;; for regtest comparison
     (if (defined? 'EVENT_LISTENER_CONSOLE_OUTPUT)
      (ly:progress
