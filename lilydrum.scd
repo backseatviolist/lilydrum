@@ -1,4 +1,4 @@
-var notesFile, outFile;
+var json;
 var score, sd, tempo;
 var samples, samplesDir, noteData;
 
@@ -30,12 +30,9 @@ samples.keys.do { |name|
 
 tempo = 60 / 120;
 
-File.use(Platform.userHomeDir +/+ ".lilydrum-cache", "r", { |f|
-	var str = f.readAllString;
-	# notesFile, outFile = str.split($\n);
-});
+json = JSONFileReader.read(Platform.userHomeDir +/+ ".lilydrum-cache");
 
-noteData = TabFileReader(notesFile);
+noteData = TabFileReader(json["notesFile"]);
 noteData.do { |line|
 	if (line[1] == "note") {
 		var time = line[0].asFloat;
@@ -45,7 +42,7 @@ noteData.do { |line|
 	};
 };
 
-score.write(outFile,
+score.write(json["outFile"],
 	sampleRate: 44100,
 	headerFormat: "WAVE",
 	sampleFormat: "float",

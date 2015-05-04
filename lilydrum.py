@@ -4,6 +4,7 @@ import sys
 import os
 import argparse
 import subprocess
+import json
 
 def callAndPrint(cmd):
 	print(' '.join(cmd))
@@ -36,8 +37,9 @@ if not os.path.isfile(input_file):
 # There is no way to pass command-line args to supercollider.js,
 # so we have to use this weird roundabout hack by writing to a special
 # cache file. Yuck!
-f = open(cachefile, 'w')
-f.write('\n'.join([input_file, wav_file]))
-f.close()
+json.dumps({
+	'notesFile': input_file,
+	'outFile': wav_file
+})
 
 subprocess.call(['supercollider', scd_file])
