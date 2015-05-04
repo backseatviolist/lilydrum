@@ -37,9 +37,11 @@ if not os.path.isfile(input_file):
 # There is no way to pass command-line args to supercollider.js,
 # so we have to use this weird roundabout hack by writing to a special
 # cache file. Yuck!
-json.dumps({
+f = open(cachefile, 'w')
+json.dump({
 	'notesFile': input_file,
 	'outFile': wav_file
-})
+}, f)
+f.close()
 
 subprocess.call(['supercollider', scd_file])
