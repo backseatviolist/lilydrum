@@ -1,0 +1,3 @@
+[submodule "kits"]
+	path = kits
+	url = https://github.com/backseatviolist/lilydrum-kits
