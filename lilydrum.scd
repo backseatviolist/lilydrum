@@ -1,6 +1,33 @@
-var json;
+var lilydrumCache, mode, readDir;
 var score, sd, tempo;
-var samples, samplesDir, noteData;
+var kits, kitsDir, noteData;
+
+lilydrumCache = JSONFileReader.read(Platform.userHomeDir +/+ ".lilydrum-cache");
+
+kits = Dictionary();
+
+readDir = { |name, dir, json|
+	kits[name] = Dictionary();
+	json["kits"].keysValuesDo { |samplename, file|
+		kits[name][samplename.asSymbol] = file;
+	};
+};
+
+kitsDir = lilydrumCache["kitsDir"];
+if (PathName(kitsDir +/+ "lilydrum.json").isFile) {
+	var json = JSONFileReader.read(kitsDir +/+ "lilydrum.json");
+	mode = \single;
+	readDir.value(\main, kitsDir, json);
+} {
+	mode = \multiple;
+	PathName(kitsDir).folders.do { |dir|
+		dir = dir.fullPath;
+		if (PathName(dir +/+ "lilydrum.json").isFile) {
+			var json = JSONFileReader.read(dir +/+ "lilydrum.json");
+			readDir.value(json["name"], dir, json);
+		};
+	};
+};
 
 score = CtkScore();
 
@@ -12,37 +39,28 @@ sd = CtkSynthDef(\note, {
 	Out.ar(out, Pan2.ar(snd, 0.0, amp));
 });
 
-samplesDir = "/home/nathan/music/digital/samples/instruments/tr505/";
-
-samples = (
-	bassdrum: "bass drum 505.wav",
-	snare: "snare drum 505.wav",
-	closedhihat: "closed hi-hat 505.wav",
-	openhihat: "closed hi-hat 505.wav",
-	handclap: "hand clap 505.wav",
-	sidestick: "rim shot 505.wav"
-);
-
-samples.keys.do { |name|
-	samples[name] = CtkBuffer(samplesDir +/+ samples[name]);
-	score.add(samples[name]);
+kits.values.do { |kit|
+	kit.keys.do { |sample|
+		kit[sample] = CtkBuffer(kit[sample]);
+		score.add(kit[sample]);
+	}
 };
+
+kit = \main;
 
 tempo = 60 / 120;
 
-json = JSONFileReader.read(Platform.userHomeDir +/+ ".lilydrum-cache");
-
-noteData = TabFileReader(json["notesFile"]);
+noteData = TabFileReader(lilydrumCache["notesFile"]);
 noteData.do { |line|
 	if (line[1] == "note") {
 		var time = line[0].asFloat;
 		var type = line[2].asSymbol;
-		var note = sd.note(time*4*tempo).buf_(samples[type]);
+		var note = sd.note(time*4*tempo).buf_(kits[type]);
 		score.add(note);
 	};
 };
 
-score.write(json["outFile"],
+score.write(lilydrumCache["outFile"],
 	sampleRate: 44100,
 	headerFormat: "WAVE",
 	sampleFormat: "float",
