@@ -39,7 +39,7 @@ wav_file = base_file + '.wav'
 if not os.path.isfile(input_file):
 	raise ValueError('File %s does not exist' % input_file)
 
-if not os.path.isdir(samples_dir):
+if not os.path.isdir(kits_dir):
 	raise ValueError('%s is not a directory' % kits_dir)
 
 # There is no way to pass command-line args to supercollider.js,
